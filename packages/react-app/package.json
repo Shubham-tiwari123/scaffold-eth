@@ -46,7 +46,14 @@
     "react-qr-reader": "^2.2.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^3.3.1",
-    "web3modal": "^1.5.0"
+    "web3modal": "^1.5.0",
+    "aws-sdk": "^2.750.0",
+    "js-file-download": "^0.4.12",
+    "wallet-besu": "^1.0.2",
+    "semantic-ui-css": "^2.4.1",
+    "semantic-ui-react": "^1.2.1",
+    "eccrypto": "^1.1.5",
+    "universal-cookie": "^4.0.3"
   },
   "devDependencies": {
     "@testing-library/dom": "^6.12.2",
