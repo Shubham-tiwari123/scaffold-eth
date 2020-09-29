@@ -6,12 +6,12 @@ const e2e = require('./e2e-encrypt.js')
 
 AWS.config.update({
     region: 'ap-south-1',
-    accessKeyId: '******************',
-    secretAccessKey: '*********************************'
+    accessKeyId: 'AKIAWRATGLMSJECCQDOT',
+    secretAccessKey: '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'
 })
 let s3 = new AWS.S3();
 
-const registerUser = async function(name, email, privateKey, tx, writeContracts){
+export const registerUser = async function(name, email, privateKey, tx, writeContracts){
     try {
         let publicKey = e2e.getPublicKey(privateKey)
         publicKey = publicKey.toString("hex")
@@ -25,15 +25,15 @@ const registerUser = async function(name, email, privateKey, tx, writeContracts)
     }
 }
 
-const createWallet = async function(password){
+export const createWallet = async function(password){
     return await wallet.create(password,"orion key1")
 }
 
-const getAllAccounts = async function(password){
+export const getAllAccounts = async function(password){
     return await wallet.login(password)
 }
 
-const loginUser = async function(privateKey, tx, writeContracts){
+export const loginUser = async function(privateKey, tx, writeContracts){
     try {
         let publicKey = e2e.getPublicKey(privateKey)
         publicKey = publicKey.toString("hex")
@@ -47,10 +47,11 @@ const loginUser = async function(privateKey, tx, writeContracts){
     }
 }
 
-const getAllUsers = async function(loggedUser, tx, writeContracts){
+export const getAllUsers = async function(loggedUser, tx, writeContracts){
     const registeredUsers = await tx(writeContracts.E2EEContract.getAllUsers())
     let caller
     let userArray = []
+    try {
     for (let i = 0; i < registeredUsers.length; i++){
         const result = await tx(writeContracts.E2EEContract.storeUser(registeredUsers[i]))
         if (loggedUser.toLowerCase()!==registeredUsers[i].toLowerCase()) {
@@ -68,6 +69,10 @@ const getAllUsers = async function(loggedUser, tx, writeContracts){
             }
         }
     }
+    }
+    catch(err) {
+        console.log(err)
+    }
     const userDetails = {
         userArray:userArray,
         caller:caller
@@ -75,7 +80,7 @@ const getAllUsers = async function(loggedUser, tx, writeContracts){
     return userDetails
 }
 
-const storeFileAWS = function (awsKey, encryptedData){
+export const storeFileAWS = function (awsKey, encryptedData){
     return new Promise((resolve,reject) =>{
         s3.putObject({
             Bucket: 'secure-doc-test',
@@ -91,7 +96,7 @@ const storeFileAWS = function (awsKey, encryptedData){
     })
 }
 
-const getFileAWS = function (key){
+export const getFileAWS = function (key){
     return new Promise((resolve,reject) =>{
         s3.getObject({
             Bucket: 'secure-doc-test',
@@ -106,7 +111,7 @@ const getFileAWS = function (key){
     })
 }
 
-const uploadFile = async function(party, file, password, setSubmitting, tx, writeContracts){
+export const uploadFile = async function(party, file, password, setSubmitting, tx, writeContracts){
 
     let encryptedKeys=[]
     let userAddress=[]
@@ -150,13 +155,14 @@ const uploadFile = async function(party, file, password, setSubmitting, tx, writ
     }
 }
 
-const getAllFile = async function(tx, writeContracts){
+export const getAllFile = async function(tx, writeContracts){
     return await tx(writeContracts.E2EEContract.getAllDocIndex())
 }
 
-const downloadFile = async function (docIndex,password, tx, writeContracts){
+export const downloadFile = async function (docIndex,password, tx, writeContracts){
 
     let cipherKey = await tx(writeContracts.E2EEContract.getCipherKey(docIndex))
+    console.log(cipherKey)
     cipherKey = JSON.parse(cipherKey)
     const document = await tx(writeContracts.E2EEContract.getDocument(docIndex))
     let encryptedKey = {
@@ -184,15 +190,4 @@ const downloadFile = async function (docIndex,password, tx, writeContracts){
         })
     })
 
-}
-
-module.exports ={
-    registerUser,
-    loginUser,
-    createWallet,
-    getAllAccounts,
-    getAllUsers,
-    uploadFile,
-    getAllFile,
-    downloadFile
 }

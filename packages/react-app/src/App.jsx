@@ -22,22 +22,24 @@ import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
 
 const blockExplorer = "https://etherscan.io/"
 const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 })
-const localProviderUrl = "http://localhost:8545";
-const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
-const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
+// const localProviderUrl = "http://localhost:8545";
+// const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
+// const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 
 function App() {
 
     const [injectedProvider, setInjectedProvider] = useState();
     const price = useExchangePrice(mainnetProvider);
     const gasPrice = useGasPrice("fast");
-    const userProvider = useUserProvider(injectedProvider, localProvider);
+    const userProvider = useUserProvider(injectedProvider);
     const address = useUserAddress(userProvider);
+    console.log(address)
     const tx = Transactor(userProvider, gasPrice)
-    const yourLocalBalance = useBalance(localProvider, address);
+    const yourLocalBalance = useBalance(userProvider, address);
     const yourMainnetBalance = useBalance(mainnetProvider, address);
-    const readContracts = useContractLoader(localProvider)
+    const readContracts = useContractLoader(userProvider)
     const writeContracts = useContractLoader(userProvider)
+    console.log(writeContracts)
 
     const loadWeb3Modal = useCallback(async () => {
         const provider = await web3Modal.connect();
@@ -61,7 +63,7 @@ function App() {
         <div style={{position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10,}}>
           <Account
               address={address}
-              localProvider={localProvider}
+              localProvider={userProvider}
               userProvider={userProvider}
               mainnetProvider={mainnetProvider}
               price={price}
@@ -75,7 +77,7 @@ function App() {
         <div style={{position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10}}>
           <Row align="middle" gutter={4}>
             <Col span={15}>
-              <Faucet localProvider={localProvider} price={price}/>
+              <Faucet localProvider={userProvider} price={price}/>
             </Col>
           </Row>
         </div>
@@ -88,7 +90,6 @@ function App() {
                       address={address}
                       tx={tx}
                       writeContracts={writeContracts}
-                      {...props}
                   />}/>
 
               <Route exact path="/login" render={(props) =>
@@ -98,14 +99,31 @@ function App() {
                       writeContracts={writeContracts}
                       {...props}
                   />}/>
-              <Route path="/signup" component={SignUpForm}/>
+              <Route exact path="/signup" render={(props) =>
+                  <SignUpForm
+                      address={address}
+                      tx={tx}
+                      writeContracts={writeContracts}
+                  />}/>
 
-              <Layout>
+              <Layout
+              address={address}
+              localProvider={userProvider}
+              userProvider={userProvider}
+              mainnetProvider={mainnetProvider}
+              price={price}
+              web3Modal={web3Modal}
+              loadWeb3Modal={loadWeb3Modal}
+              logoutOfWeb3Modal={logoutOfWeb3Modal}
+              blockExplorer={blockExplorer}
+              
+              >
                 <Route exact path="/dashboard" render={(props) =>
                     <Dashboard
                         address={address}
                         tx={tx}
                         writeContracts={writeContracts}
+                        readContracts={readContracts}
                         {...props}
                     />}/>
                 <Route exact path="/documents" render={(props) =>

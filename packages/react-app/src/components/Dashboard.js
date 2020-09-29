@@ -24,18 +24,19 @@ export default function Dashboard(props) {
 
 
     useEffect(() => {
-        console.log("useEffect Dashboard:")
-            // index.getAllUsers(props.address, props.tx, props.writeContracts).then(result => {
-            //     console.log("Registered users:", result)
-            //     if (result.userArray.length > 0) {
-            //         setUsers(result.userArray)
-            //         setCaller(result.caller)
-            //     }
-            // })
-    }, [])
+        if (props.writeContracts) {
+            index.getAllUsers(props.address, props.tx, props.writeContracts).then(result => {
+                console.log("Registered users:", result)
+                if (result.userArray.length > 0) {
+                    setUsers(result.userArray)
+                    setCaller(result.caller)
+                }
+            })
+        }
+    }, [props.writeContracts])
 
     const getUsers = async () =>{
-        const result = await index.getAllUsers(props.address,props.tx, props.writeContracts)
+        const result = await index.getAllUsers(props.address,props.tx, props.readContracts)
         setUsers(result.userArray)
         setCaller(result.caller)
     }
@@ -86,8 +87,6 @@ export default function Dashboard(props) {
                     Select Document<input ref={fileInputRef} type="file" hidden onChange={(event)=> {selectFile(event.target.files[0])}}></input>
                 </Button>
                 <Button loading={submitting} positive style={{margin: '4rem'}} onClick={uploadFile}>Share file</Button>
-
-                <Button positive style={{margin: '4rem'}} onClick={getUsers}>Get Users</Button>
             </Grid.Column>
         </Grid>
     )

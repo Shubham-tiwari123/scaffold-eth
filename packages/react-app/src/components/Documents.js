@@ -10,16 +10,11 @@ export default function Documents(props) {
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        // index.init().then(() => {
-        //     index.getAllFile().then(
-        //         (files) => {
-        //             setDocs(files)
-        //             setLoading(false)
-        //         }
-        //     )
-        // })
+        if (props.writeContracts) {
+        getAllDoc()
+        }
 
-    }, [])
+    }, [props.writeContracts])
 
     const getAllDoc = async () =>{
         setLoading(true)
@@ -37,16 +32,11 @@ export default function Documents(props) {
     const downloadFile = (docIndex)=>{
         console.log('Downloading:',docs[docIndex])
         index.downloadFile(docs[docIndex],password, props.tx, props.writeContracts).then((result)=>{
-            if(result)
-                alert("File downloaded!")
-            else
-                alert("Some error occurred!")
         })
     }
 
     return (
         <div>
-            <Button onClick={getAllDoc}>Get Docs</Button>
         <Table celled striped style={{maxWidth: '50%'}}>
             <Table.Header>
                 <Table.Row>

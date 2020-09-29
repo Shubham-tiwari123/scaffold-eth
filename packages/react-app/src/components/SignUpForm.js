@@ -7,7 +7,7 @@ import Cookies from 'universal-cookie';
 const cookies = new Cookies();
 const index = require('../lib/e2ee.js')
 
-function SignUpForm(props) {
+function SignUpForm({writeContracts, tx}) {
 
     let history = useHistory();
 
@@ -23,7 +23,7 @@ function SignUpForm(props) {
         const walletStatus = await index.createWallet(password)
         if (walletStatus){
             const accounts = await index.getAllAccounts(password)
-            const registrationStatus = await index.registerUser(name, email, accounts[0], props.tx, props.writeContracts)
+            const registrationStatus = await index.registerUser(name, email, accounts[0], tx, writeContracts)
             if (registrationStatus) {
                 cookies.set('userAddress', registrationStatus);
                 history.push({

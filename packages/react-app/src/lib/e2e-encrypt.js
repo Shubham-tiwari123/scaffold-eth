@@ -7,7 +7,7 @@ const eccrypto = require("eccrypto")
  * @param cipherKey: {Buffer} Symmetric Key
  * @returns {Promise<unknown>|null}
  */
-const encryptKey = function(publicKey,cipherKey){
+export const encryptKey = function(publicKey,cipherKey){
     try {
         const iv = Buffer.alloc(16);
         iv.fill(5);
@@ -31,7 +31,7 @@ const encryptKey = function(publicKey,cipherKey){
  * @param privateKey: {String}
  * @returns {null|Buffer}
  */
-const getPublicKey = function (privateKey){
+export const getPublicKey = function (privateKey){
     try {
         return eccrypto.getPublic(Buffer.from(privateKey, "hex"))
     }catch(err){
@@ -45,7 +45,7 @@ const getPublicKey = function (privateKey){
  * @param encryptedKey: {Buffer}
  * @returns {Promise<unknown>|null}
  */
-const decryptKey = function(privateKey,encryptedKey){
+export const decryptKey = function(privateKey,encryptedKey){
     try {
         return new Promise((resolve) => {
             eccrypto.decrypt(Buffer.from(privateKey, "hex"), encryptedKey)
@@ -66,7 +66,7 @@ const decryptKey = function(privateKey,encryptedKey){
  * @param password: {String}
  * @returns {null|Buffer}
  */
-const generateCipherKey = function(password){
+export const generateCipherKey = function(password){
     try {
         return new Promise((resolve)=>{
             const cipherKey = crypto.createHash('sha256').update(password).digest();
@@ -80,7 +80,7 @@ const generateCipherKey = function(password){
 }
 
 
-const encryptFile = function(file,cipherKey){
+export const encryptFile = function(file,cipherKey){
     return new Promise((resolve)=>{
         let iv = crypto.randomBytes(16);
         const cipher = crypto.createCipheriv('aes256', cipherKey, iv);
@@ -94,11 +94,11 @@ const encryptFile = function(file,cipherKey){
     })
 }
 
-const calculateHash = function(file){
+export const calculateHash = function(file){
     return crypto.createHash('sha256').update(file.toString()).digest()
 }
 
-const decryptFile = async function(encryptedData,cipherKey){
+export const decryptFile = async function(encryptedData,cipherKey){
     const iv = encryptedData.slice(0,16)
     encryptedData = encryptedData.slice(16)
     return new Promise((resolve)=>{
@@ -107,14 +107,4 @@ const decryptFile = async function(encryptedData,cipherKey){
         resolve(decryptedData)
     })
 
-}
-
-module.exports = {
-    encryptFile,
-    decryptFile,
-    generateCipherKey,
-    encryptKey,
-    decryptKey,
-    getPublicKey,
-    calculateHash,
 }

@@ -4,7 +4,9 @@ import { useHistory } from "react-router-dom";
 import Header from "./HeaderSem";
 
 
-export default function Layout({ children }) {
+export default function Layout(props) {
+
+    console.log(props)
 
     let history = useHistory()
 
@@ -13,9 +15,9 @@ export default function Layout({ children }) {
         ['/login', '/signup'].includes(history.location.pathname) ?
             null :
             <div>
-                <Header/>
+                <Header {...props}/>
                 <div>
-                    { children }
+                    { props.children }
                 </div>
             </div>
     )
