@@ -55,7 +55,7 @@ export default function Address(props) {
   let text;
   if (props.onChange) {
     text = (
-      <Text editable={{ onChange: props.onChange }} copyable={{ text: props.value }}>
+      <Text editable={{ onChange: props.onChange }} copyable={{ text: props.value}}>
         <a style={{ color: "#222222" }} target={"_blank"} href={etherscanLink}>
           {displayAddress}
         </a>

@@ -46,7 +46,7 @@ export default function Wallet(props) {
           padding: 7,
           color: props.color ? props.color : "#1890ff",
           cursor: "pointer",
-          fontSize: 28,
+          fontSize: props.size? props.size : 28,
           verticalAlign: "middle",
         }}
       />

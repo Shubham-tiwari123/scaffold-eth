@@ -1,6 +1,6 @@
 /* eslint-disable */
 import React, {useCallback, useEffect, useState} from "react";
-import {BrowserRouter, Route, Switch} from "react-router-dom";
+import {HashRouter, Route, Switch} from "react-router-dom";
 import "antd/dist/antd.css";
 import 'semantic-ui-css/semantic.min.css'
 import "./App.css";
@@ -33,7 +33,6 @@ function App() {
     const gasPrice = useGasPrice("fast");
     const userProvider = useUserProvider(injectedProvider);
     const address = useUserAddress(userProvider);
-    console.log(address)
     const tx = Transactor(userProvider, gasPrice)
     const yourLocalBalance = useBalance(userProvider, address);
     const yourMainnetBalance = useBalance(mainnetProvider, address);
@@ -82,7 +81,7 @@ function App() {
           </Row>
         </div>
 
-        <BrowserRouter>
+        <HashRouter>
           <div className="App">
             <Switch>
               <Route exact path="/" render={(props) =>
@@ -143,7 +142,7 @@ function App() {
               </Layout>
             </Switch>
           </div>
-        </BrowserRouter>
+        </HashRouter>
       </div>
   );
 }

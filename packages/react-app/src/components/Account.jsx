@@ -22,18 +22,18 @@ export default function Account({
       modalButtons.push(
         <Button
           key="logoutbutton"
-          style={{ verticalAlign: "top", marginLeft: 8, marginTop: 4 }}
+          style={{  marginLeft: 8, marginTop: 4}}
           size="large"
           onClick={logoutOfWeb3Modal}
         >
-          logout
+          Disconnect
         </Button>,
       );
     } else {
       modalButtons.push(
         <Button
           key="loginbutton"
-          style={{ verticalAlign: "top", marginLeft: 8, marginTop: 4 }}
+          style={{  marginLeft: 8, marginTop: 4 }}
           size="large"
           type={minimized ? "default" : "primary"}
           onClick={loadWeb3Modal}
@@ -48,9 +48,9 @@ export default function Account({
     ""
   ) : (
     <span>
-      {address ? <Address value={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} /> : "Connecting..."}
-      <Balance address={address} provider={localProvider} dollarMultiplier={price} />
-      <Wallet address={address} provider={userProvider} ensProvider={mainnetProvider} price={price} />
+      {address ? <Address value={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} fontSize={19}/> : "Connecting..."}
+      <Balance address={address} provider={localProvider} dollarMultiplier={price} size={19} />
+      <Wallet address={address} provider={userProvider} ensProvider={mainnetProvider} price={price} size={19} />
     </span>
   );
 
