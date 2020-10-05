@@ -7,12 +7,13 @@ const index = require('../lib/e2ee.js')
 export default function Dashboard(props) {
 
     const password = localStorage.getItem('password')
-
+    const fileStorage =["AWS","Fleek"]
     const [users, setUsers] = useState([])
     const [caller, setCaller] = useState(null)
     const [destUser, setDestUser] = useState('')
     const [file, selectFile] = useState({})
     const [submitting, setSubmitting] = useState(false)
+    const [storageType, setStorage] = useState("AWS")
 
     let fileInputRef = React.createRef();
 
@@ -35,12 +36,6 @@ export default function Dashboard(props) {
         }
     }, [props.writeContracts])
 
-    const getUsers = async () =>{
-        const result = await index.getAllUsers(props.address,props.tx, props.readContracts)
-        setUsers(result.userArray)
-        setCaller(result.caller)
-    }
-
     const uploadFile = async ()=>{
         let partiesInvolved = []
         setSubmitting(true)
@@ -51,7 +46,7 @@ export default function Dashboard(props) {
         }
         partiesInvolved.push(caller)
         const receipt  = await index.uploadFile(partiesInvolved, file, password, setSubmitting,
-            props.tx, props.writeContracts)
+            props.tx, props.writeContracts, storageType)
         console.log("File uploaded!", receipt)
     }
 
@@ -76,6 +71,24 @@ export default function Dashboard(props) {
 
                     })}
                     onChange={(event, data)=> setDestUser(data.value)}
+                />
+
+                <Dropdown
+                    style={{margin: '0.2rem', marginTop:'1rem'}}
+                    placeholder='Select storage type'
+                    fluid
+                    selection
+                    options={fileStorage.map((storage)=> {
+                        return (
+                            {
+                                key: storage,
+                                text: storage,
+                                value: storage,
+                            }
+                        )
+
+                    })}
+                    onChange={(event, data)=> setStorage(data.value)}
                 />
 
                 <Header icon>

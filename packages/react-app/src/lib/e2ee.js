@@ -1,15 +1,19 @@
 /* eslint-disable */
 const AWS = require('aws-sdk')
+const fleekStorage = require('@fleekhq/fleek-storage-js')
 const wallet = require('wallet-besu')
 const fileDownload = require('js-file-download')
 const e2e = require('./e2e-encrypt.js')
 
 AWS.config.update({
     region: 'ap-south-1',
-    accessKeyId: 'AKIAWRATGLMSJECCQDOT',
-    secretAccessKey: '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'
+    accessKeyId: '******************',
+    secretAccessKey: '************************************'
 })
 let s3 = new AWS.S3();
+
+const fleekApiKey = "**********************"
+const fleekApiSecret = "**************************************"
 
 export const registerUser = async function(name, email, privateKey, tx, writeContracts){
     try {
@@ -52,23 +56,23 @@ export const getAllUsers = async function(loggedUser, tx, writeContracts){
     let caller
     let userArray = []
     try {
-    for (let i = 0; i < registeredUsers.length; i++){
-        const result = await tx(writeContracts.E2EEContract.storeUser(registeredUsers[i]))
-        if (loggedUser.toLowerCase()!==registeredUsers[i].toLowerCase()) {
-            const value = {
-                address: registeredUsers[i],
-                name: result.name,
-                key: result.publicKey,
-            }
-            userArray.push(value)
-        }else{
-            caller ={
-                address: registeredUsers[i],
-                name: result.name,
-                key: result.publicKey,
+        for (let i = 0; i < registeredUsers.length; i++){
+            const result = await tx(writeContracts.E2EEContract.storeUser(registeredUsers[i]))
+            if (loggedUser.toLowerCase()!==registeredUsers[i].toLowerCase()) {
+                const value = {
+                    address: registeredUsers[i],
+                    name: result.name,
+                    key: result.publicKey,
+                }
+                userArray.push(value)
+            }else{
+                caller ={
+                    address: registeredUsers[i],
+                    name: result.name,
+                    key: result.publicKey,
+                }
             }
         }
-    }
     }
     catch(err) {
         console.log(err)
@@ -78,6 +82,24 @@ export const getAllUsers = async function(loggedUser, tx, writeContracts){
         caller:caller
     }
     return userDetails
+}
+
+const storeFileFleek = async (fileName,encryptedData)=>{
+    return await fleekStorage.upload({
+        apiKey: fleekApiKey,
+        apiSecret: fleekApiSecret,
+        key: fileName,
+        data: encryptedData
+    })
+}
+
+const getFileFleek = async (fileName)=>{
+    const file = await fleekStorage.get({
+        apiKey: fleekApiKey,
+        apiSecret: fleekApiSecret,
+        key: fileName
+    })
+    return file.data
 }
 
 export const storeFileAWS = function (awsKey, encryptedData){
@@ -111,7 +133,8 @@ export const getFileAWS = function (key){
     })
 }
 
-export const uploadFile = async function(party, file, password, setSubmitting, tx, writeContracts){
+export const uploadFile = async function(party, file, password, setSubmitting, tx, writeContracts,
+                                         storageType){
 
     let encryptedKeys=[]
     let userAddress=[]
@@ -138,20 +161,38 @@ export const uploadFile = async function(party, file, password, setSubmitting, t
             encryptedKeys.push(JSON.stringify(storeKey))
             userAddress.push(party[i].address)
         }
-        const awsFileKey = fileHash.toString("hex").concat(".").concat(fileFormat)
+        const fileKey = fileHash.toString("hex").concat(".")
+            .concat(storageType).concat(".").concat(fileFormat)
 
-        storeFileAWS(awsFileKey, encryptedFile).then(()=>{
-            tx(writeContracts.E2EEContract.uploadDocument(
-                42,
-                fileHash.toString("hex"),
-                awsFileKey,
-                encryptedKeys,
-                userAddress
-            )).then((receipt)=>{setSubmitting(false)})
-        }).catch((err)=>{
-            console.log("ERROR: ",err)
-        })
-
+        if (storageType==="Fleek"){
+            storeFileFleek(fileKey, encryptedFile).then(()=>{
+                tx(writeContracts.E2EEContract.uploadDocument(
+                    42,
+                    fileHash.toString("hex"),
+                    fileKey,
+                    encryptedKeys,
+                    userAddress
+                )).then((receipt) => {
+                    setSubmitting(false)
+                })
+            }).catch((err) => {
+                console.log("ERROR: ", err)
+            })
+        }else {
+            storeFileAWS(fileKey, encryptedFile).then(() => {
+                tx(writeContracts.E2EEContract.uploadDocument(
+                    42,
+                    fileHash.toString("hex"),
+                    fileKey,
+                    encryptedKeys,
+                    userAddress
+                )).then((receipt) => {
+                    setSubmitting(false)
+                })
+            }).catch((err) => {
+                console.log("ERROR: ", err)
+            })
+        }
     }
 }
 
@@ -179,15 +220,26 @@ export const downloadFile = async function (docIndex,password, tx, writeContract
 
     const fileSplit= documentLocation.split(".")
     const fileFormat = fileSplit[fileSplit.length - 1]
-
+    const storageType = fileSplit[fileSplit.length - 2]
+    console.log("download storage type:",storageType)
     return new Promise((resolve)=>{
-        getFileAWS(documentLocation).then((encryptedFile) =>{
-            e2e.decryptFile(encryptedFile, decryptedKey).then((decryptedFile)=>{
-                const hash2 = e2e.calculateHash(new  Uint8Array(decryptedFile)).toString("hex")
-                fileDownload(decryptedFile,"res2".concat(".").concat(fileFormat))
-                resolve(true)
+        if (storageType==="AWS") {
+            getFileAWS(documentLocation).then((encryptedFile) => {
+                e2e.decryptFile(encryptedFile, decryptedKey).then((decryptedFile) => {
+                    const hash2 = e2e.calculateHash(new Uint8Array(decryptedFile)).toString("hex")
+                    fileDownload(decryptedFile, "res2".concat(".").concat(fileFormat))
+                    resolve(true)
+                })
             })
-        })
+        }else{
+            getFileFleek(documentLocation).then((encryptedFile) => {
+                e2e.decryptFile(encryptedFile, decryptedKey).then((decryptedFile) => {
+                    const hash2 = e2e.calculateHash(new Uint8Array(decryptedFile)).toString("hex")
+                    fileDownload(decryptedFile, "res2".concat(".").concat(fileFormat))
+                    resolve(true)
+                })
+            })
+        }
     })
 
 }

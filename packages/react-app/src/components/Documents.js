@@ -11,7 +11,7 @@ export default function Documents(props) {
 
     useEffect(() => {
         if (props.writeContracts) {
-        getAllDoc()
+            getAllDoc()
         }
 
     }, [props.writeContracts])
@@ -30,8 +30,9 @@ export default function Documents(props) {
     }
 
     const downloadFile = (docIndex)=>{
-        console.log('Downloading:',docs[docIndex])
-        index.downloadFile(docs[docIndex],password, props.tx, props.writeContracts).then((result)=>{
+        console.log('Downloading:',docIndex)
+        index.downloadFile(docIndex,password, props.tx, props.writeContracts).then((result)=>{
+            alert("File Downloaded!")
         })
     }
 
